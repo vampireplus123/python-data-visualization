@@ -118,7 +118,7 @@ def draw_graph():
     plt.show()
 
 # Run the visualization
-# draw_graph()
+draw_graph()
 
 
 
