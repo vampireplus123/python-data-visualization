@@ -1,46 +1,80 @@
-import csv
-import math
-from itertools import combinations
+import pandas as pd
+import networkx as nx
+import numpy as np
+from math import radians, cos, sin, asin, sqrt
+import matplotlib.pyplot as plt
 
-# Haversine formula to calculate the distance between two points on the Earth
-def haversine(lat1, lon1, lat2, lon2):
-    # Radius of the Earth in kilometers
-    R = 6371.0
-    # Convert latitude and longitude from degrees to radians
-    lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
-    # Differences in coordinates
+def haversine_distance(lat1, lon1, lat2, lon2):
+    lat1, lon1, lat2, lon2 = map(radians, [lat1, lon1, lat2, lon2])
     dlat = lat2 - lat1
     dlon = lon2 - lon1
-    # Haversine formula
-    a = math.sin(dlat / 2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    # Distance in kilometers
-    return R * c
+    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    c = 2 * asin(sqrt(a))
+    r = 6371  # Bán kính trái đất (km)
+    return c * r
 
-# Read the CSV file and extract station coordinates
-stations = []
-with open('Relative_Data.csv', 'r') as file:
-    reader = csv.DictReader(file)
-    for row in reader:
-        stations.append((row['Name'], float(row['Lat']), float(row['Lon'])))
 
-# Calculate pairwise distances between all stations
-distances = []
-for (name1, lat1, lon1), (name2, lat2, lon2) in combinations(stations, 2):
-    distance = haversine(lat1, lon1, lat2, lon2)
-    distances.append(distance)
+lines = {
+    "piccadilly": ["Hyde Park Corner", "Green Park", "Piccadilly Circus", 
+                   "Leicester Square", "Holborn", "Covent Garden"],
+    "central": ["White City", "Notting Hill Gate", "Oxford Circus", 
+                "Tottenham Court Road", "Holborn", "Liverpool Street"],
+    "victoria": ["Brixton","Stockwell","Vauxhall","Green Park","Oxford Circus","Warren Street","Euston"],
+    "bakerloo": ["Baker Street", "Oxford Circus", "Piccadilly Circus", 
+                 "Charing Cross", "Waterloo", "Elephant & Castle"],
+    "northern": ["Euston", "Goodge Street", 
+                "Tottenham Court Road", "Leicester Square", 
+                "Charing Cross", "Embankment"]
+}
 
-# Calculate total length of the network
-total_length = sum(distances)
+def calculate_network_statistics():
 
-# Calculate the average distance
-average_distance = total_length / len(distances)
+    df = pd.read_csv('Relative_Data.csv')
+    
+  
+    G = nx.Graph()
+    
+    total_distance = 0
+    distances = []
+    
+    for line_name, stations in lines.items():
+        for i in range(len(stations)-1):
+            station1 = stations[i]
+            station2 = stations[i+1]
+            
+            try:
+                # station position
+                s1_data = df[df['Name'] == station1].iloc[0]
+                s2_data = df[df['Name'] == station2].iloc[0]
+                
+                # Calculate distance
+                distance = haversine_distance(
+                    s1_data['Lat'], s1_data['Lon'],
+                    s2_data['Lat'], s2_data['Lon']
+                )
+                
+                # Adding edge
+                G.add_edge(station1, station2, distance=distance, line=line_name)
+                distances.append(distance)
+                total_distance += distance
+                
+            except IndexError:
+                print(f"Không tìm thấy dữ liệu cho trạm {station1} hoặc {station2}")
+                continue
+    
+    # calculate
+    avg_distance = np.mean(distances) if distances else 0
+    std_distance = np.std(distances) if distances else 0
+    
+    # result
+    print(f"Total length of the transport network: {total_distance:.2f} km")
+    print(f"Average distance between stations: {avg_distance:.2f} km")
+    print(f"Standard deviation of distances: {std_distance:.2f} km")
+    
+    return G
 
-# Calculate the standard deviation of the distances
-variance = sum((d - average_distance) ** 2 for d in distances) / len(distances)
-std_deviation = math.sqrt(variance)
+def main():
+    G = calculate_network_statistics()
 
-# Print results
-print(f"Total length of the transport network: {total_length:.2f} km")
-print(f"Average distance between stations: {average_distance:.2f} km")
-print(f"Standard deviation of distances: {std_deviation:.2f} km")
+if __name__ == "__main__":
+    main()
