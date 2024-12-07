@@ -63,7 +63,6 @@ for i in range(len(stations)-1):
 
 # Adding nodes and edges to the graph
 G.add_nodes_from(stations)
-NewNodeGraph.add_node("New")
 for u, v, distance in edges:
     G.add_edge(u, v, distance=distance)
 
@@ -76,43 +75,27 @@ final_positions = {
     "Covent Garden":(4,1),
     "Holborn": (5, 2)
 }
-New_Position = {
-    "Green Park": (1, 0),
-    "Piccadilly Circus": (2, 0),
-    "New": (2,-1),
-    "Leicester Square": (3, 0),
-}
 
-# Giữ nguyên code phía trên cho đến phần final_positions
-
-# Thêm đoạn này ngay sau final_positions
 label_positions = {
-    "Hyde Park Corner": (0.5, -1),      # Bên phải
-    "Green Park": (1, 0.3),             # Bên trên
+    "Hyde Park Corner": (0.5, -1),      
+    "Green Park": (1, 0.3),             
     "Piccadilly Circus": (2, 0.3), 
-    "Leicester Square": (3, 0.3),        # Bên trên
-    "Covent Garden":(4,0.3),
-    "New": (2,-1),
+    "Leicester Square": (3, 0.3),       
+    "Covent Garden":(4.5,1),
     "Holborn": (5.5, 2),
 }
 
-# Thay thế toàn bộ phần code vẽ đồ thị cũ bằng đoạn này
+
 plt.figure(figsize=(12, 8))
 
 # Draw edges
 nx.draw_networkx_edges(G, pos=final_positions, edge_color='blue')
-nx.draw_networkx_edges(NewNodeGraph, pos=New_Position, edge_color='blue')
-
-
 
 # Draw nodes
 nx.draw_networkx_nodes(G, pos=final_positions, node_color='blue', node_size=700)
-nx.draw_networkx_nodes(NewNodeGraph, label_positions, node_color='blue', node_size=700)
-
 
 # Draw labels with custom positions
 nx.draw_networkx_labels(G, pos=label_positions, font_size=10, font_color='black')
-
 
 # Adding edge labels (distances)
 edge_labels = nx.get_edge_attributes(G, 'distance')
@@ -129,9 +112,6 @@ plt.title("Piccadilly Line (Distances in km)", fontsize=12)
 plt.axis("off")
 plt.tight_layout()
 plt.show()
-
-# Giữ nguyên phần print distances nếu có
-
 
 # Output the distances between stations for verification
 print("\nDistances between stations:")

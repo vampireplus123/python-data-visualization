@@ -61,24 +61,24 @@ try:
     # Retrieve the path to the input CSV
     input_path =input_path_instance.StationCSVPath()
     if not os.path.exists(input_path):
-        print(f"File input không tồn tại: {input_path}")
+        print(f"File Do Not Exist: {input_path}")
         exit()
 
     # Read the CSV file
     df = pd.read_csv(input_path)
-    print(f"Đã đọc được {len(df)} dòng từ file input")
+    print(f"Read {len(df)} lines from file input")
     
     # Combine all station names from the dictionary
     all_stations = [name for line in line_stations.values() for name in line]
 
     # Filter the dataframe based on station names
     stations = df.loc[df['Name'].isin(all_stations)]
-    print(f"Số trạm sau khi lọc: {len(stations)}")
+    print(f"Cleaned Stations: {len(stations)}")
 
     # Write the filtered data to a new CSV file
     output_path = os.path.join(os.getcwd(), 'Relative_Data.csv')
     stations.to_csv(output_path, index=False)
-    print(f"Đã lưu thành công vào file: {output_path}")
+    print(f"Output Succed: {output_path}")
 
 except Exception as e:
-    print(f"Có lỗi xảy ra: {str(e)}")
+    print(f"Error: {str(e)}")
